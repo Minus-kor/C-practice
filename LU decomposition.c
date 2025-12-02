@@ -2,7 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void printVector(double vector[], int size) {
+    int i;
+    printf("[");
+    for(i=0;i<size-1;i++) {
+        printf("%.2f, ", vector[i]);
+    }
+    printf("%.2f]",vector[size-1]);
+    printf("\n");
+}
 
+void inputVector(int size, double vector[]) {
+    int i;
+    for(i=0;i<size;i++) {
+        printf("%d행: >>", i);
+        scanf("%lf", &vector[i]);
+    }
+}
 void printMatrix(int size, double matrix[][size]) {
     int i, j;
     for(i=0;i<size;i++) {
@@ -58,6 +74,38 @@ double getDeterminant(int n, double lower[][n], double upper[][n]) {
     return det;
 }
 
+void getRoot(int size, double lower[][size], double upper[][size], double vector[]) {
+    double tempVector[size];
+    int i = 0, j = 0;
+    double sum;
+
+    // 하부 삼각 행렬 //
+    tempVector[0] = vector[0]/lower[0][0];
+
+    // Ly = b //
+    for(i=1;i<size;i++) {
+        sum = 0;
+        for(j=0;j<i;j++) {
+            sum += tempVector[j] * lower[i][j];
+        }
+        tempVector[i] = (vector[i]-sum)/lower[i][i];
+    }
+
+    // 상부 삼각 행렬 //
+    tempVector[size-1] = tempVector[size-1]/upper[size-1][size-1];
+
+    // Ux = y //
+    for(i=size-2;i>-1;i--) {
+        sum = 0;
+        for(j=size-1;j>i;j--) {
+            sum += tempVector[j] * upper[i][j];
+        }
+        tempVector[i] = (tempVector[i]-sum)/upper[i][i];
+    }
+
+    printVector(tempVector, size);
+}
+
 int main(void) {
 
     int n;
@@ -67,9 +115,11 @@ int main(void) {
     double matrix[n][n];
     double upper[n][n];
     double lower[n][n];
+    double vector[n];
 
     // input matrix //
     inputMatrix(n, matrix);
+    inputVector(n, vector);
 
     // get upper //
     getLUMatrix(n, matrix, upper, lower);
@@ -83,6 +133,8 @@ int main(void) {
     printMatrix(n, lower);
 
     printf("행렬식: %.1f", getDeterminant(n, lower, upper));
-
+    
+    printf(" 답: ");
+    getRoot(n, lower, upper, vector);
     return 0;
 }
